@@ -68,3 +68,11 @@ I was inspired by the [Helios](https://github.com/dinguschan-owo/helios) concept
 ## License
 
 This code is under MIT License, wich means that you can do anything you want with the code, but there isn't any warranty of liability or any responsability.
+
+## Devs TODO list
+
+- [ ] Add live chat
+- [ ] Less dirty code
+- [ ] Fix some loading time bugs
+- [x] Custom loading animation
+- [x] Add more comments in code
