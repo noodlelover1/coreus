@@ -609,27 +609,23 @@
 
             frameUrl.textContent = targetUrl;
 
-            // Show loading overlay for embeddr immediately before setting the src
-            if (proxyUrl.startsWith('https://embeddr.rhw.one/embed#')) {
-                proxyLoadingOverlay.classList.remove('hidden');
-            }
+            // show loading overlay immediately before setting the src for all proxy types
+            proxyLoadingOverlay.classList.remove('hidden');
 
             proxyFrame.style.display = 'block';
             document.body.style.overflow = 'hidden';
 
-            // Set the iframe src after showing the overlay to prevent the ugly loading screen
+            // set the iframe src after showing the overlay to prevent the ugly loading screen
             proxyIframe.src = proxyUrl;
 
-            // Try to inject styles once the iframe loads
+            // try to inject styles once the iframe loads
             proxyIframe.onload = function() {
                 setTimeout(() => {
                     injectIframeStyles(proxyIframe);
 
-                    // Hide loading overlay after 5 seconds for proxy
-                    if (proxyUrl.startsWith('https://embeddr.rhw.one/embed#')) {
-                        proxyLoadingOverlay.classList.add('hidden');
-                    }
-                }, 5000); // Longer delay for proxy
+                    // hide loading overlay after 5 seconds for proxy
+                    proxyLoadingOverlay.classList.add('hidden');
+                }, 5000); // longer delay
             };
 
             const proxyBtn = document.getElementById('proxyBtn');
@@ -732,24 +728,24 @@
             document.getElementById('settingsModal').style.display = 'none';
         }
 
-        // Function to show the games view
+        // function to show the games view
         async function showGamesView() {
-            // Hide all other views first
+            // hide all other views first
             document.querySelector('.container').style.display = 'none';
             document.getElementById('toolsView').style.display = 'none';
             document.getElementById('aboutView').style.display = 'none';
 
-            // Show games view
+            // show games view
             document.getElementById('gamesView').style.display = 'block';
 
-            // Load games
+            // load games
             await loadGames();
 
-            // Set previous view to games
+            // set previous view to games
             previousView = 'games';
         }
 
-        // Function to hide the games view and return to main
+        // function to hide the games view and return to main
         function hideGamesView() {
             document.getElementById('gamesView').style.display = 'none';
             document.getElementById('toolsView').style.display = 'none';
@@ -757,111 +753,115 @@
             document.querySelector('.container').style.display = 'block';
         }
 
-        // Function to show the game popup
+// shows a game
         function showGamePopup(gamePath) {
-            // Set previous view to games
+    // set previous view to games
             previousView = 'games';
 
-            // Hide games view
+        // hide games view
             document.getElementById('gamesView').style.display = 'none';
 
-            // Show game popup
+    // show game popup
             document.getElementById('gamePopup').style.display = 'block';
 
-            // Set the game URL - use the href value which is the path to the game
+        // set the game URL
             const gameUrl = `https://noodlelover1.github.io/coreus-assets/${gamePath}`;
             document.getElementById('gameUrlDisplay').textContent = gameUrl;
 
-            // Try to load the game directly first
+    // try to load the game directly first
             const gameIframe = document.getElementById('gameIframe');
-            const gameLoadingOverlay = document.getElementById('gameLoadingOverlay');
+                  const gameLoadingOverlay = document.getElementById('gameLoadingOverlay');
 
-            // Clear previous error handlers
+        // reset the loading overlay to visible state
+            gameLoadingOverlay.classList.remove('hidden');
+
+    // clear previous error handlers
             gameIframe.onload = null;
             gameIframe.onerror = null;
 
-            // Set the direct URL initially
-            gameIframe.src = gameUrl;
-
-            // Add error handling to fallback to embeddr if direct load fails
-            gameIframe.onerror = function() {
-                console.log("Direct load failed, trying embeddr...");
-                // Fallback to embeddr
-                const embeddrUrl = `https://embeddr.rhw.one/embed#${encodeURIComponent(gameUrl)}`;
-
-                // Show loading overlay for embeddr immediately to prevent ugly loading screen
-                gameLoadingOverlay.classList.remove('hidden');
-
-                gameIframe.src = embeddrUrl;
-
-                // Set error handler for embeddr as well
-                gameIframe.onerror = function() {
-                    console.log("Embeddr also failed to load the game");
-                    // Hide loading overlay if embeddr fails
-                    gameLoadingOverlay.classList.add('hidden');
-                };
-
-                // Handle embeddr load completion - hide overlay after 0.5 seconds
-                gameIframe.onload = function() {
-                    // Hide loading overlay after 0.5 seconds to prevent ugly loading screen
-                    setTimeout(() => {
-                        gameLoadingOverlay.classList.add('hidden');
-                    }, 500);
-                };
-            };
-
-            // Handle direct load completion
-            gameIframe.onload = function() {
-                // Hide loading overlay after 0.5 seconds
+    // define a common function to handle iframe load completion for both cases
+            const handleLoadCompletion = function() {
                 setTimeout(() => {
                     gameLoadingOverlay.classList.add('hidden');
                 }, 500);
+            };
+
+        // set the direct URL initially
+            gameIframe.src = gameUrl;
+
+    // handle direct load completion first
+            gameIframe.onload = handleLoadCompletion;
+
+    // add error handling to fallback to embeddr if direct load fails
+            gameIframe.onerror = function() {
+                console.log("direct load failed, trying embeddr...");
+        // fallback to embeddr
+                const embeddrUrl = `https://embeddr.rhw.one/embed#${encodeURIComponent(gameUrl)}`;
+
+    // show loading overlay for embeddr immediately
+                gameLoadingOverlay.classList.remove('hidden');
+
+            gameIframe.src = embeddrUrl;
+
+        // set error handler for embeddr as well
+                gameIframe.onerror = function() {
+                    console.log("embeddr also failed to load the game");
+    // hide loading overlay if embeddr fails
+                    gameLoadingOverlay.classList.add('hidden');
+                };
+
+            // handle embeddr load completion
+                gameIframe.onload = handleLoadCompletion;
             };
         }
 
         // Track which view was active before popup
         let previousView = 'main'; // 'main', 'games', or 'tools'
 
-        // Function to close the game popup and return to the appropriate view
-        function closeGamePopup() {
-            document.getElementById('gamePopup').style.display = 'none';
+// closes the game popup
+function closeGamePopup() {
+    document.getElementById('gamePopup').style.display = 'none';
 
-            // Hide all views first to ensure clean state
-            document.getElementById('gamesView').style.display = 'none';
-            document.getElementById('toolsView').style.display = 'none';
-            document.getElementById('aboutView').style.display = 'none';
-            document.querySelector('.container').style.display = 'none';
+        // reset the loading overlay to hidden state with proper opacity
+    const gameLoadingOverlay = document.getElementById('gameLoadingOverlay');
+    gameLoadingOverlay.classList.add('hidden');
 
-            // Return to the appropriate view based on where we came from
-            if (previousView === 'games') {
-                document.getElementById('gamesView').style.display = 'block';
-            } else if (previousView === 'tools') {
-                document.getElementById('toolsView').style.display = 'block';
-            } else if (previousView === 'about') {
-                document.getElementById('aboutView').style.display = 'block';
-            } else {
-                document.querySelector('.container').style.display = 'block';
-            }
+        // hide all views first to ensure clean state
+    document.getElementById('gamesView').style.display = 'none';
+    document.getElementById('toolsView').style.display = 'none';
+    document.getElementById('aboutView').style.display = 'none';
+    document.querySelector('.container').style.display = 'none';
 
-            // Clear the iframe to stop any running content
-            document.getElementById('gameIframe').src = 'about:blank';
-        }
+        // return to the appropriate view based on where we came from
+    if (previousView === 'games') {
+        document.getElementById('gamesView').style.display = 'block';
+    } else if (previousView === 'tools') {
+        document.getElementById('toolsView').style.display = 'block';
+    } else if (previousView === 'about') {
+        document.getElementById('aboutView').style.display = 'block';
+    } else {
+        document.querySelector('.container').style.display = 'block';
+    }
 
-        // Function to show the about view
+        // clear the iframe to stop any running content
+    document.getElementById('gameIframe').src = 'about:blank';
+}
+
+        // shows about view
         function showAboutView() {
-            // Hide all other views first
+            // hide all other views first
             document.querySelector('.container').style.display = 'none';
             document.getElementById('gamesView').style.display = 'none';
             document.getElementById('toolsView').style.display = 'none';
 
-            // Show about view
+            // show about view
             document.getElementById('aboutView').style.display = 'block';
 
-            // Set previous view to about
+            // set previous view to about
             previousView = 'about';
         }
 
-        // Function to hide the about view and return to main
+        // function to hide the about view and return to main
         function hideAboutView() {
             document.getElementById('aboutView').style.display = 'none';
             document.getElementById('gamesView').style.display = 'none';
@@ -954,65 +954,65 @@
             }
         }
 
-        // Function to show the tool popup
-        function showToolPopup(toolPath) {
-            // Set previous view to tools
+// shows a tool
+    function showToolPopup(toolPath) {
+        // set previous view to tools
             previousView = 'tools';
 
-            // Hide tools view
+    // hide tools view
             document.getElementById('toolsView').style.display = 'none';
 
-            // Show tool popup (reusing game popup for tools)
+        // show tool popup (reusing game popup for tools)
             document.getElementById('gamePopup').style.display = 'block';
 
-            // Set the tool URL
+    // set the tool URL
             const toolUrl = `https://noodlelover1.github.io/coreus-assets/${toolPath}`;
             document.getElementById('gameUrlDisplay').textContent = toolUrl;
 
-            // Try to load the tool directly first
+        // try to load the tool directly first
             const gameIframe = document.getElementById('gameIframe');
-            const gameLoadingOverlay = document.getElementById('gameLoadingOverlay');
+                    const gameLoadingOverlay = document.getElementById('gameLoadingOverlay');
 
-            // Clear previous error handlers
+    // reset the loading overlay to visible state
+            gameLoadingOverlay.classList.remove('hidden');
+
+        // clear previous error handlers
             gameIframe.onload = null;
             gameIframe.onerror = null;
 
-            // Set the direct URL initially
-            gameIframe.src = toolUrl;
-
-            // Add error handling to fallback to embeddr if direct load fails
-            gameIframe.onerror = function() {
-                console.log("Direct load failed, trying embeddr...");
-                // Fallback to embeddr
-                const embeddrUrl = `https://embeddr.rhw.one/embed#${encodeURIComponent(toolUrl)}`;
-
-                // Show loading overlay for embeddr immediately to prevent ugly loading screen
-                gameLoadingOverlay.classList.remove('hidden');
-
-                gameIframe.src = embeddrUrl;
-
-                // Set error handler for embeddr as well
-                gameIframe.onerror = function() {
-                    console.log("Embeddr also failed to load the tool");
-                    // Hide loading overlay if embeddr fails
-                    gameLoadingOverlay.classList.add('hidden');
-                };
-
-                // Handle embeddr load completion - hide overlay after 0.5 seconds
-                gameIframe.onload = function() {
-                    // Hide loading overlay after 0.5 seconds to prevent ugly loading screen
-                    setTimeout(() => {
-                        gameLoadingOverlay.classList.add('hidden');
-                    }, 500);
-                };
-            };
-
-            // Handle direct load completion
-            gameIframe.onload = function() {
-                // Hide loading overlay after 0.5 seconds
+    // define a common function to handle iframe load completion for both cases
+            const handleLoadCompletion = function() {
                 setTimeout(() => {
                     gameLoadingOverlay.classList.add('hidden');
                 }, 500);
+            };
+
+        // set the direct URL initially
+            gameIframe.src = toolUrl;
+
+    // handle direct load completion first
+            gameIframe.onload = handleLoadCompletion;
+
+    // add error handling to fallback to embeddr if direct load fails
+            gameIframe.onerror = function() {
+                console.log("direct load failed, trying embeddr...");
+    // fallback to embeddr
+                const embeddrUrl = `https://embeddr.rhw.one/embed#${encodeURIComponent(toolUrl)}`;
+
+        // show loading overlay for embeddr immediately
+                gameLoadingOverlay.classList.remove('hidden');
+
+    gameIframe.src = embeddrUrl;
+
+        // set error handler for embeddr as well
+                gameIframe.onerror = function() {
+                    console.log("embeddr also failed to load the tool");
+        // hide loading overlay if embeddr fails
+                    gameLoadingOverlay.classList.add('hidden');
+                };
+
+    // handle embeddr load completion
+                gameIframe.onload = handleLoadCompletion;
             };
         }
 
