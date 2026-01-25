@@ -75,9 +75,9 @@ This code is under MIT License, wich means that you can do anything you want wit
 
 ## Devs TODO list
 
-- [ ] Add live chat (thats for me)
 - [ ] Globally more features
 - [ ] Fix some loading time bugs
 - [ ] Less dirty code
+- [x] Add live chat
 - [x] Custom loading animation
 - [x] Add more comments in code
