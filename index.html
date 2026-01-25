@@ -235,9 +235,6 @@
     <div class="container">
         <div style="position: relative; width: 100%;">
             <h1 class="title">coreus</h1>
-            <button class="proxy-btn" id="settingsBtn" style="position: absolute; top: 0; right: 0; margin: 0; padding: 0.5rem; min-width: auto; background: rgba(255,255,255,0.1); border: 1px solid #555; border-radius: 50%; cursor: pointer; transition: all 0.3s ease; font-size: 1rem; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.borderColor='#777';" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.borderColor='#555';">
-                <i class="fas fa-cog"></i>
-            </button>
         </div>
 
         <div class="search-container">
@@ -254,40 +251,6 @@
         </button>
 
         <div class="status" id="statusDiv"></div>
-    </div>
-
-    <!-- Settings Modal -->
-    <div class="modal" id="settingsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center;">
-        <div class="modal-content" style="background: #1a1a1a; padding: 2rem; border-radius: 10px; width: 90%; max-width: 500px; position: relative;">
-            <h2 style="color: white; margin-bottom: 1.5rem;">Proxy Settings</h2>
-
-            <div style="margin-bottom: 1.5rem;">
-                <label style="display: block; color: white; margin-bottom: 0.5rem;">Proxy Mode:</label>
-                <div style="display: flex; gap: 1.5rem; margin-bottom: 1rem;">
-                    <label style="color: white; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                        <input type="radio" name="proxyMode" value="fallback" checked onchange="setProxyMode('fallback')" style="width: 16px; height: 16px; accent-color: #4CAF50;"> Auto Fallback
-                    </label>
-                    <label style="color: white; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                        <input type="radio" name="proxyMode" value="single" onchange="setProxyMode('single')" style="width: 16px; height: 16px; accent-color: #4CAF50;"> Single Proxy
-                    </label>
-                </div>
-            </div>
-
-            <div id="singleProxySelection" style="margin-bottom: 1.5rem;">
-                <label style="display: block; color: white; margin-bottom: 0.5rem;">Select Proxy:</label>
-                <select id="proxySelect" style="width: 100%; padding: 0.8rem; background: #222; color: white; border: 2px solid #444; border-radius: 8px; font-size: 1rem; outline: none; transition: border-color 0.3s;">
-                    <option value="https://embeddr.rhw.one/embed#">embeddr.rhw.one</option>
-                    <option value="https://api.allorigins.win/raw?url=">api.allorigins.win</option>
-                    <option value="https://api.cors.lol/?url=">api.cors.lol</option>
-                    <option value="https://yacdn.org/proxy/">yacdn.org</option>
-                </select>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
-                <button class="proxy-btn" onclick="toggleSettingsModal()" style="background: #555;">Cancel</button>
-                <button class="proxy-btn" onclick="saveSettings()" style="background: #4CAF50;">Save</button>
-            </div>
-        </div>
     </div>
 
     <div class="proxy-frame" id="proxyFrame">
@@ -340,6 +303,10 @@
         <button class="nav-icon-btn" style="background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="showAboutView()">
             <i class="fas fa-info-circle" style="color: white; font-size: 20px;"></i>
         </button>
+        <div style="width: 1px; height: 24px; margin: 0 10px;"></div>
+        <button class="nav-icon-btn" style="background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="showSettingsView()">
+            <i class="fas fa-cog" style="color: white; font-size: 20px;"></i>
+        </button>
     </div>
 
     <!-- Games View Container -->
@@ -373,6 +340,10 @@
             <div style="width: 1px; height: 24px; margin: 0 10px;"></div>
             <button class="nav-icon-btn" style="background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="showAboutView()">
                 <i class="fas fa-info-circle" style="color: white; font-size: 20px;"></i>
+            </button>
+            <div style="width: 1px; height: 24px; margin: 0 10px;"></div>
+            <button class="nav-icon-btn" style="background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="showSettingsView()">
+                <i class="fas fa-cog" style="color: white; font-size: 20px;"></i>
             </button>
         </div>
     </div>
@@ -408,6 +379,10 @@
             <div style="width: 1px; height: 24px; margin: 0 10px;"></div>
             <button class="nav-icon-btn" style="background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="showAboutView()">
                 <i class="fas fa-info-circle" style="color: white; font-size: 20px;"></i>
+            </button>
+            <div style="width: 1px; height: 24px; margin: 0 10px;"></div>
+            <button class="nav-icon-btn" style="background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="showSettingsView()">
+                <i class="fas fa-cog" style="color: white; font-size: 20px;"></i>
             </button>
         </div>
     </div>
@@ -451,6 +426,10 @@
             <button class="nav-icon-btn" style="background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="showAboutView()">
                 <i class="fas fa-info-circle" style="color: white; font-size: 20px;"></i>
             </button>
+            <div style="width: 1px; height: 24px; margin: 0 10px;"></div>
+            <button class="nav-icon-btn" style="background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="showSettingsView()">
+                <i class="fas fa-cog" style="color: white; font-size: 20px;"></i>
+            </button>
         </div>
     </div>
 
@@ -491,6 +470,77 @@
             <div style="width: 1px; height: 24px; margin: 0 10px;"></div>
             <button class="nav-icon-btn" style="background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="showAboutView()">
                 <i class="fas fa-info-circle" style="color: white; font-size: 20px;"></i>
+            </button>
+            <div style="width: 1px; height: 24px; margin: 0 10px;"></div>
+            <button class="nav-icon-btn" style="background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="showSettingsView()">
+                <i class="fas fa-cog" style="color: white; font-size: 20px;"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Settings View Container -->
+    <div id="settingsView" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; overflow-y: auto; padding: 20px 20px 100px 20px;">
+        <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 40px;">
+            <h2 class="title" style="font-size: 4rem; margin-bottom: 0; flex-grow: 1; text-align: center;">Settings</h2>
+        </div>
+        <div style="max-width: 800px; margin: 0 auto; background: #1a1a1a; padding: 2rem; border-radius: 10px;">
+            <h3 style="color: white; margin-bottom: 1.5rem; font-size: 1.5rem;">Proxy Settings</h3>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; color: white; margin-bottom: 0.5rem;">Proxy Mode:</label>
+                <div style="display: flex; gap: 1.5rem; margin-bottom: 1rem;">
+                    <label style="color: white; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="radio" name="proxyMode" value="fallback" checked onchange="setProxyMode('fallback')" style="width: 16px; height: 16px; accent-color: #4CAF50;"> Auto Fallback
+                    </label>
+                    <label style="color: white; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="radio" name="proxyMode" value="single" onchange="setProxyMode('single')" style="width: 16px; height: 16px; accent-color: #4CAF50;"> Single Proxy
+                    </label>
+                </div>
+            </div>
+
+            <div id="singleProxySelection" style="margin-bottom: 1.5rem;">
+                <label style="display: block; color: white; margin-bottom: 0.5rem;">Select Proxy:</label>
+                <select id="proxySelect" style="width: 100%; padding: 0.8rem; background: #222; color: white; border: 2px solid #444; border-radius: 8px; font-size: 1rem; outline: none; transition: border-color 0.3s;">
+                    <option value="https://embeddr.rhw.one/embed#">embeddr.rhw.one</option>
+                    <option value="https://api.allorigins.win/raw?url=">api.allorigins.win</option>
+                    <option value="https://api.cors.lol/?url=">api.cors.lol</option>
+                    <option value="https://yacdn.org/proxy/">yacdn.org</option>
+                </select>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+                <button class="proxy-btn" onclick="saveSettings()" style="background: #4CAF50;">Save</button>
+            </div>
+        </div>
+
+        <!-- Floating Bottom Navbar for Settings View -->
+        <div class="bottom-navbar" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); border-radius: 50px; padding: 10px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 2001; border: 1px solid rgba(255,255,255,0.1);">
+            <button class="nav-icon-btn" style="background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="location.reload()">
+                <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='30' cy='30' r='15' fill='%23fff'/><circle cx='70' cy='70' r='15' fill='%23fff'/><path d='M35 35 L65 65' stroke='%23fff' stroke-width='5'/></svg>" alt="Home" style="width: 24px; height: 24px;">
+            </button>
+            <div style="width: 1px; height: 24px; background: rgba(255,255,255,0.2); margin: 0 10px;"></div>
+            <button class="nav-icon-btn" style="background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="hideSettingsView()">
+                <i class="fas fa-network-wired" style="color: white; font-size: 20px;"></i>
+            </button>
+            <div style="width: 1px; height: 24px; margin: 0 10px;"></div>
+            <button class="nav-icon-btn" style="background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="showGamesView()">
+                <i class="fas fa-gamepad" style="color: white; font-size: 20px;"></i>
+            </button>
+            <div style="width: 1px; height: 24px; margin: 0 10px;"></div>
+            <button class="nav-icon-btn" style="background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="showToolsView()">
+                <i class="fas fa-tools" style="color: white; font-size: 20px;"></i>
+            </button>
+            <div style="width: 1px; height: 24px; margin: 0 10px;"></div>
+            <button class="nav-icon-btn" style="background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="showChatView()">
+                <i class="fas fa-comment-alt" style="color: white; font-size: 20px;"></i>
+            </button>
+            <div style="width: 1px; height: 24px; margin: 0 10px;"></div>
+            <button class="nav-icon-btn" style="background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="showAboutView()">
+                <i class="fas fa-info-circle" style="color: white; font-size: 20px;"></i>
+            </button>
+            <div style="width: 1px; height: 24px; margin: 0 10px;"></div>
+            <button class="nav-icon-btn" style="background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="showSettingsView()">
+                <i class="fas fa-cog" style="color: white; font-size: 20px;"></i>
             </button>
         </div>
     </div>
@@ -748,17 +798,6 @@
         let proxyMode = 'fallback'; // Default mode
         let selectedProxy = proxyAPIs[0]; // Default to first proxy in the list
 
-        function toggleSettingsModal() {
-            const modal = document.getElementById('settingsModal');
-            if (modal.style.display === 'none') {
-                // Load current settings into the modal
-                loadCurrentSettings();
-                modal.style.display = 'flex';
-            } else {
-                modal.style.display = 'none';
-            }
-        }
-
         function loadCurrentSettings() {
             // Set the radio buttons based on current mode
             document.querySelector(`input[name="proxyMode"][value="${proxyMode}"]`).checked = true;
@@ -782,8 +821,17 @@
             proxyMode = document.querySelector('input[name="proxyMode"]:checked').value;
             selectedProxy = document.getElementById('proxySelect').value;
 
-            // Close the modal
-            document.getElementById('settingsModal').style.display = 'none';
+            // Show success message
+            const saveBtn = event.target;
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = 'Settings Saved!';
+            saveBtn.style.background = '#22c55e';
+            
+            // Revert the button after 2 seconds
+            setTimeout(() => {
+                saveBtn.textContent = originalText;
+                saveBtn.style.background = '#4CAF50';
+            }, 2000);
         }
 
         // function to show the games view
@@ -793,6 +841,7 @@
             document.getElementById('toolsView').style.display = 'none';
             document.getElementById('aboutView').style.display = 'none';
             document.getElementById('chatView').style.display = 'none';
+            document.getElementById('settingsView').style.display = 'none';
 
             // show games view
             document.getElementById('gamesView').style.display = 'block';
@@ -913,6 +962,7 @@ function closeGamePopup() {
             document.getElementById('gamesView').style.display = 'none';
             document.getElementById('toolsView').style.display = 'none';
             document.getElementById('chatView').style.display = 'none';
+            document.getElementById('settingsView').style.display = 'none';
 
             // show about view
             document.getElementById('aboutView').style.display = 'block';
@@ -936,6 +986,7 @@ function closeGamePopup() {
             document.getElementById('gamesView').style.display = 'none';
             document.getElementById('aboutView').style.display = 'none';
             document.getElementById('chatView').style.display = 'none';
+            document.getElementById('settingsView').style.display = 'none';
 
             // Show tools view
             document.getElementById('toolsView').style.display = 'block';
@@ -1146,6 +1197,7 @@ function closeGamePopup() {
             document.getElementById('gamesView').style.display = 'none';
             document.getElementById('toolsView').style.display = 'none';
             document.getElementById('aboutView').style.display = 'none';
+            document.getElementById('settingsView').style.display = 'none';
 
             // show chat view
             document.getElementById('chatView').style.display = 'block';
@@ -1160,15 +1212,42 @@ function closeGamePopup() {
             document.getElementById('gamesView').style.display = 'none';
             document.getElementById('toolsView').style.display = 'none';
             document.getElementById('aboutView').style.display = 'none';
+            document.getElementById('settingsView').style.display = 'none';
+            document.querySelector('.container').style.display = 'block';
+        }
+
+        // function to show settings view
+        function showSettingsView() {
+            // hide all other views first
+            document.querySelector('.container').style.display = 'none';
+            document.getElementById('gamesView').style.display = 'none';
+            document.getElementById('toolsView').style.display = 'none';
+            document.getElementById('aboutView').style.display = 'none';
+            document.getElementById('chatView').style.display = 'none';
+
+            // show settings view
+            document.getElementById('settingsView').style.display = 'block';
+
+            // load current settings into the view
+            loadCurrentSettings();
+
+            // set previous view to settings
+            previousView = 'settings';
+        }
+
+        // function to hide the settings view and return to main
+        function hideSettingsView() {
+            document.getElementById('settingsView').style.display = 'none';
+            document.getElementById('gamesView').style.display = 'none';
+            document.getElementById('toolsView').style.display = 'none';
+            document.getElementById('aboutView').style.display = 'none';
+            document.getElementById('chatView').style.display = 'none';
             document.querySelector('.container').style.display = 'block';
         }
 
         // Attach event listeners after DOM is loaded
         window.addEventListener('load', function() {
             document.getElementById('urlInput').focus();
-
-            // Attach click event to settings button
-            document.getElementById('settingsBtn').addEventListener('click', toggleSettingsModal);
         });
     </script>
 <script src="//cdn.jsdelivr.net/npm/eruda"></script>
