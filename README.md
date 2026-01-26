@@ -75,6 +75,7 @@ This code is under MIT License, wich means that you can do anything you want wit
 
 ## Devs TODO list
 
+- [ ] [URGENT] Better proxy integration + new APIs
 - [ ] Globally more features
 - [ ] Fix some loading time bugs
 - [ ] Less dirty code
