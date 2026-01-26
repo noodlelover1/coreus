@@ -116,6 +116,12 @@
             color: #3b82f6;
         }
 
+        .status.warning {
+        	background-color: rgba(251, 191, 36, 0.1);
+        	border: 1px solid rgba(251, 191, 36, 0.3);
+        	color: #fbbf24;
+        }
+
         .proxy-frame {
             display: none;
             position: fixed;
@@ -223,11 +229,16 @@
                 font-size: 2.5rem;
                 margin-bottom: 2rem;
             }
-            
+
             .search-input {
                 font-size: 1rem;
                 padding: 0.8rem 1.2rem;
             }
+        }
+
+        .extra-style {
+            margin: 10px;
+            padding: 5px;
         }
     </style>
 </head>
@@ -244,16 +255,20 @@
             <input
                 type="text"
                 class="search-input"
-                placeholder="Enter URL to proxy..."
+                placeholder="Search with DuckDuckGo or enter and address ..."
                 id="urlInput"
             />
         </div>
 
         <button class="proxy-btn" id="proxyBtn" onclick="startProxy()">
-            Access via Proxy
+            Launch
         </button>
 
         <div class="status" id="statusDiv"></div>
+
+        <div id="extra-div" style="display:none;">
+            <p>This is extra content</p>
+        </div>
     </div>
 
     <!-- Settings Modal -->
@@ -454,7 +469,6 @@
 
         function isValidUrl(string) {
             try {
-                // Add protocol if missing
                 if (!string.startsWith('http://') && !string.startsWith('https://')) {
                     string = 'https://' + string;
                 }
@@ -463,6 +477,11 @@
             } catch (_) {
                 return false;
             }
+        }
+
+        function checkUrlFormat(url) {
+            var pattern = /^https?:\/\/(?:[-\w.])+(?:\:[0-9]+)?(?:\/(?:[\w\/_.])*(?:\?(?:[\w&=%.])*)?(?:\#(?:[\w.])*)?)?$/;
+            return pattern.test(url);
         }
 
         function encodeUrl(url) {
@@ -474,7 +493,7 @@
                 const iframe = document.createElement('iframe');
                 iframe.style.display = 'none';
                 iframe.src = proxyUrl + encodeUrl(targetUrl);
-                
+
                 const timeout = setTimeout(() => {
                     document.body.removeChild(iframe);
                     resolve(false);
@@ -483,7 +502,6 @@
                 iframe.onload = () => {
                     clearTimeout(timeout);
                     try {
-                        // Test if iframe loaded successfully
                         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
                         if (iframeDoc && !iframeDoc.location.href.includes('about:blank')) {
                             document.body.removeChild(iframe);
@@ -493,7 +511,6 @@
                             resolve(false);
                         }
                     } catch (e) {
-                        // Cross-origin restrictions might prevent access, but iframe loaded
                         document.body.removeChild(iframe);
                         resolve(true);
                     }
@@ -560,7 +577,6 @@
             try {
                 const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
                 if (iframeDoc) {
-                    // Create a style element to inject
                     const style = iframeDoc.createElement('style');
                     style.textContent = `
                         body {
@@ -583,12 +599,10 @@
                         }
                     `;
 
-                    // Try to inject the style
                     const head = iframeDoc.head || iframeDoc.getElementsByTagName('head')[0];
                     if (head) {
                         head.appendChild(style);
                     } else {
-                        // If no head, try to append to body
                         const body = iframeDoc.body || iframeDoc.getElementsByTagName('body')[0];
                         if (body) {
                             body.appendChild(style);
@@ -596,7 +610,6 @@
                     }
                 }
             } catch (e) {
-                // Cross-origin restrictions prevent styling, which is expected
                 console.log('Cannot inject styles due to cross-origin restrictions');
             }
         }
@@ -609,23 +622,19 @@
 
             frameUrl.textContent = targetUrl;
 
-            // show loading overlay immediately before setting the src for all proxy types
             proxyLoadingOverlay.classList.remove('hidden');
 
             proxyFrame.style.display = 'block';
             document.body.style.overflow = 'hidden';
 
-            // set the iframe src after showing the overlay to prevent the ugly loading screen
             proxyIframe.src = proxyUrl;
 
-            // try to inject styles once the iframe loads
             proxyIframe.onload = function() {
                 setTimeout(() => {
                     injectIframeStyles(proxyIframe);
 
-                    // hide loading overlay after 5 seconds for proxy
                     proxyLoadingOverlay.classList.add('hidden');
-                }, 5000); // longer delay
+                }, 5000);
             };
 
             const proxyBtn = document.getElementById('proxyBtn');
@@ -637,7 +646,7 @@
         function closeProxy() {
             const proxyFrame = document.getElementById('proxyFrame');
             const proxyIframe = document.getElementById('proxyIframe');
-            
+
             proxyFrame.style.display = 'none';
             proxyIframe.src = 'about:blank';
             document.body.style.overflow = 'auto';
@@ -646,22 +655,47 @@
         function startProxy() {
             const urlInput = document.getElementById('urlInput');
             const inputUrl = urlInput.value.trim();
-            
+
             if (!inputUrl) {
                 showStatus('Please enter a URL', 'error');
                 setTimeout(hideStatus, 3000);
                 return;
             }
 
-            const validUrl = isValidUrl(inputUrl);
-            if (!validUrl) {
-                showStatus('Please enter a valid URL', 'error');
-                setTimeout(hideStatus, 3000);
-                return;
+            // Check if input contains a domain name with common TLDs
+            const domainPattern = /\.(com|org|net|io|gov|edu|int|mil|arpa|co|uk|de|jp|fr|au|ca|ru|br|in|it|nl|se|no|dk|fi|es|pl|be|ch|at|cz|ie|pt|hu|gr|il|cn|hk|kr|sg|mx|ar|cl|pe|ve|uy|py|bo|ec|gt|hn|sv|ni|cr|pa|do|cu|jm|ht|bs|bz|sr|gy|fk|gg|je|im|ai|bm|ky|lc|vc|ag|gd|kn|ms|tc|vg|vi|pr|as|gu|mp|pw|fm|mh|ws|to|vu|sb|nc|pf|wf|ck|nu|tk|pn|nf|cc|cx|hm|aq|gs|tf)$/i;
+
+            if (domainPattern.test(inputUrl)) {
+                // It's a domain, add https:// if not present
+                if (!inputUrl.startsWith('http://') && !inputUrl.startsWith('https://')) {
+                    targetUrl = 'https://' + inputUrl;
+                } else {
+                    targetUrl = inputUrl;
+                }
+            } else {
+                // It's a search query, use DuckDuckGo
+                targetUrl = 'https://duckduckgo.com/?q=' + encodeURIComponent(inputUrl);
             }
 
-            targetUrl = validUrl;
             tryProxies();
+        }
+
+        function validateAndStart() {
+            const urlInput = document.getElementById('urlInput');
+            const inputUrl = urlInput.value.trim();
+
+            if (!inputUrl) {
+                alert('URL is required!');
+                return false;
+            }
+
+            if(!checkUrlFormat(inputUrl)) {
+                alert('Invalid URL format!');
+                return false;
+            }
+
+            startProxy();
+            return true;
         }
 
         // Handle Enter key in input
@@ -678,7 +712,6 @@
             }
         });
 
-        // List of proxy API endpoints
         const proxyAPIs = [
             'https://embeddr.rhw.one/embed#',
             'https://api.allorigins.win/raw?url=',
@@ -686,14 +719,15 @@
             'https://yacdn.org/proxy/'
         ];
 
-        // Settings variables
-        let proxyMode = 'fallback'; // Default mode
-        let selectedProxy = proxyAPIs[0]; // Default to first proxy in the list
+        let proxyMode = 'fallback';
+        let selectedProxy = proxyAPIs[0];
+
+        var debugMode = false;
+        const maxRetries = 3;
 
         function toggleSettingsModal() {
             const modal = document.getElementById('settingsModal');
             if (modal.style.display === 'none') {
-                // Load current settings into the modal
                 loadCurrentSettings();
                 modal.style.display = 'flex';
             } else {
@@ -701,15 +735,16 @@
             }
         }
 
+        function toggleExtraModal(){
+            console.log("Toggling extra modal");
+        }
+
         function loadCurrentSettings() {
-            // Set the radio buttons based on current mode
             document.querySelector(`input[name="proxyMode"][value="${proxyMode}"]`).checked = true;
 
-            // Show/hide single proxy selection based on mode
             document.getElementById('singleProxySelection').style.display =
                 proxyMode === 'single' ? 'block' : 'none';
 
-            // Set the selected proxy in the dropdown
             document.getElementById('proxySelect').value = selectedProxy;
         }
 
@@ -720,32 +755,24 @@
         }
 
         function saveSettings() {
-            // Save the selected settings
             proxyMode = document.querySelector('input[name="proxyMode"]:checked').value;
             selectedProxy = document.getElementById('proxySelect').value;
 
-            // Close the modal
             document.getElementById('settingsModal').style.display = 'none';
         }
 
-        // function to show the games view
         async function showGamesView() {
-            // hide all other views first
             document.querySelector('.container').style.display = 'none';
             document.getElementById('toolsView').style.display = 'none';
             document.getElementById('aboutView').style.display = 'none';
 
-            // show games view
             document.getElementById('gamesView').style.display = 'block';
 
-            // load games
             await loadGames();
 
-            // set previous view to games
             previousView = 'games';
         }
 
-        // function to hide the games view and return to main
         function hideGamesView() {
             document.getElementById('gamesView').style.display = 'none';
             document.getElementById('toolsView').style.display = 'none';
@@ -753,86 +780,65 @@
             document.querySelector('.container').style.display = 'block';
         }
 
-// shows a game
         function showGamePopup(gamePath) {
-    // set previous view to games
             previousView = 'games';
 
-        // hide games view
             document.getElementById('gamesView').style.display = 'none';
 
-    // show game popup
             document.getElementById('gamePopup').style.display = 'block';
 
-        // set the game URL
             const gameUrl = `https://noodlelover1.github.io/coreus-assets/${gamePath}`;
             document.getElementById('gameUrlDisplay').textContent = gameUrl;
 
-    // try to load the game directly first
             const gameIframe = document.getElementById('gameIframe');
                   const gameLoadingOverlay = document.getElementById('gameLoadingOverlay');
 
-        // reset the loading overlay to visible state
             gameLoadingOverlay.classList.remove('hidden');
 
-    // clear previous error handlers
             gameIframe.onload = null;
             gameIframe.onerror = null;
 
-    // define a common function to handle iframe load completion for both cases
             const handleLoadCompletion = function() {
                 setTimeout(() => {
                     gameLoadingOverlay.classList.add('hidden');
                 }, 500);
             };
 
-        // set the direct URL initially
             gameIframe.src = gameUrl;
 
-    // handle direct load completion first
             gameIframe.onload = handleLoadCompletion;
 
-    // add error handling to fallback to embeddr if direct load fails
             gameIframe.onerror = function() {
                 console.log("direct load failed, trying embeddr...");
-        // fallback to embeddr
                 const embeddrUrl = `https://embeddr.rhw.one/embed#${encodeURIComponent(gameUrl)}`;
 
-    // show loading overlay for embeddr immediately
                 gameLoadingOverlay.classList.remove('hidden');
 
             gameIframe.src = embeddrUrl;
 
-        // set error handler for embeddr as well
                 gameIframe.onerror = function() {
                     console.log("embeddr also failed to load the game");
-    // hide loading overlay if embeddr fails
                     gameLoadingOverlay.classList.add('hidden');
                 };
 
-            // handle embeddr load completion
                 gameIframe.onload = handleLoadCompletion;
             };
         }
 
-        // Track which view was active before popup
-        let previousView = 'main'; // 'main', 'games', or 'tools'
+        let previousView = 'main';
 
 // closes the game popup
 function closeGamePopup() {
     document.getElementById('gamePopup').style.display = 'none';
 
-        // reset the loading overlay to hidden state with proper opacity
     const gameLoadingOverlay = document.getElementById('gameLoadingOverlay');
     gameLoadingOverlay.classList.add('hidden');
 
-        // hide all views first to ensure clean state
     document.getElementById('gamesView').style.display = 'none';
     document.getElementById('toolsView').style.display = 'none';
     document.getElementById('aboutView').style.display = 'none';
     document.querySelector('.container').style.display = 'none';
 
-        // return to the appropriate view based on where we came from
     if (previousView === 'games') {
         document.getElementById('gamesView').style.display = 'block';
     } else if (previousView === 'tools') {
@@ -843,25 +849,19 @@ function closeGamePopup() {
         document.querySelector('.container').style.display = 'block';
     }
 
-        // clear the iframe to stop any running content
     document.getElementById('gameIframe').src = 'about:blank';
 }
 
-        // shows about view
         function showAboutView() {
-            // hide all other views first
             document.querySelector('.container').style.display = 'none';
             document.getElementById('gamesView').style.display = 'none';
             document.getElementById('toolsView').style.display = 'none';
 
-            // show about view
             document.getElementById('aboutView').style.display = 'block';
 
-            // set previous view to about
             previousView = 'about';
         }
 
-        // function to hide the about view and return to main
         function hideAboutView() {
             document.getElementById('aboutView').style.display = 'none';
             document.getElementById('gamesView').style.display = 'none';
@@ -869,24 +869,18 @@ function closeGamePopup() {
             document.querySelector('.container').style.display = 'block';
         }
 
-        // Function to show the tools view
         async function showToolsView() {
-            // Hide all other views first
             document.querySelector('.container').style.display = 'none';
             document.getElementById('gamesView').style.display = 'none';
             document.getElementById('aboutView').style.display = 'none';
 
-            // Show tools view
             document.getElementById('toolsView').style.display = 'block';
 
-            // Load tools
             await loadTools();
 
-            // Set previous view to tools
             previousView = 'tools';
         }
 
-        // Function to hide the tools view and return to main
         function hideToolsView() {
             document.getElementById('toolsView').style.display = 'none';
             document.getElementById('gamesView').style.display = 'none';
@@ -894,17 +888,15 @@ function closeGamePopup() {
             document.querySelector('.container').style.display = 'block';
         }
 
-        // Function to load tools from JSON
         async function loadTools() {
             try {
                 const response = await fetch('https://cdn.jsdelivr.net/gh/noodlelover1/coreus-assets@main/tools.json');
                 const tools = await response.json();
 
                 const toolsGrid = document.getElementById('toolsGrid');
-                toolsGrid.innerHTML = ''; // Clear previous content
+                toolsGrid.innerHTML = '';
 
                 tools.forEach(tool => {
-                    // Check if tool object has the expected properties
                     const title = tool.title || tool.name || 'Unknown Tool';
                     const imagePath = tool.image || tool.img || '';
                     const toolPath = tool.toolPath || tool.href || tool.path || tool.url || '';
@@ -932,7 +924,6 @@ function closeGamePopup() {
                     `;
 
                     toolCard.addEventListener('click', () => {
-                        // Show the tool in the popup view using the tool path
                         if (toolPath) {
                             showToolPopup(toolPath);
                         }
@@ -954,81 +945,62 @@ function closeGamePopup() {
             }
         }
 
-// shows a tool
     function showToolPopup(toolPath) {
-        // set previous view to tools
             previousView = 'tools';
 
-    // hide tools view
             document.getElementById('toolsView').style.display = 'none';
 
-        // show tool popup (reusing game popup for tools)
             document.getElementById('gamePopup').style.display = 'block';
 
-    // set the tool URL
             const toolUrl = `https://noodlelover1.github.io/coreus-assets/${toolPath}`;
             document.getElementById('gameUrlDisplay').textContent = toolUrl;
 
-        // try to load the tool directly first
             const gameIframe = document.getElementById('gameIframe');
                     const gameLoadingOverlay = document.getElementById('gameLoadingOverlay');
 
-    // reset the loading overlay to visible state
             gameLoadingOverlay.classList.remove('hidden');
 
-        // clear previous error handlers
             gameIframe.onload = null;
             gameIframe.onerror = null;
 
-    // define a common function to handle iframe load completion for both cases
             const handleLoadCompletion = function() {
                 setTimeout(() => {
                     gameLoadingOverlay.classList.add('hidden');
                 }, 500);
             };
 
-        // set the direct URL initially
             gameIframe.src = toolUrl;
 
-    // handle direct load completion first
             gameIframe.onload = handleLoadCompletion;
 
-    // add error handling to fallback to embeddr if direct load fails
             gameIframe.onerror = function() {
                 console.log("direct load failed, trying embeddr...");
-    // fallback to embeddr
                 const embeddrUrl = `https://embeddr.rhw.one/embed#${encodeURIComponent(toolUrl)}`;
 
-        // show loading overlay for embeddr immediately
                 gameLoadingOverlay.classList.remove('hidden');
 
     gameIframe.src = embeddrUrl;
 
-        // set error handler for embeddr as well
                 gameIframe.onerror = function() {
                     console.log("embeddr also failed to load the tool");
-        // hide loading overlay if embeddr fails
                     gameLoadingOverlay.classList.add('hidden');
                 };
 
-    // handle embeddr load completion
                 gameIframe.onload = handleLoadCompletion;
             };
         }
 
-        // Function to load games from JSON
         async function loadGames() {
             try {
                 const response = await fetch('https://cdn.jsdelivr.net/gh/noodlelover1/coreus-assets@main/games.json');
                 const games = await response.json();
 
-                console.log('Games data:', games); // Debug log
+                console.log('Games data:', games);
 
                 const gamesGrid = document.getElementById('gamesGrid');
-                gamesGrid.innerHTML = ''; // Clear previous content
+                gamesGrid.innerHTML = '';
 
                 games.forEach(game => {
-                    // Check if game object has the expected properties
                     const title = game.title || game.name || 'Unknown Game';
                     const imagePath = game.image || game.img || '';
                     const gamePath = game.gamePath || game.href || game.path || game.url || '';
@@ -1056,7 +1028,6 @@ function closeGamePopup() {
                     `;
 
                     gameCard.addEventListener('click', () => {
-                        // Show the game in the popup view using the game path
                         if (gamePath) {
                             showGamePopup(gamePath);
                         }
@@ -1078,15 +1049,29 @@ function closeGamePopup() {
             }
         }
 
-        // Attach event listeners after DOM is loaded
         window.addEventListener('load', function() {
             document.getElementById('urlInput').focus();
 
-            // Attach click event to settings button
             document.getElementById('settingsBtn').addEventListener('click', toggleSettingsModal);
         });
     </script>
-<script src="//cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
+
+    <script src="//cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const title = document.querySelector('.title');
+            if(title) {
+                title.addEventListener('mouseover', function() {
+                    this.style.textShadow = '0 0 10px rgba(255,255,255,0.5)';
+                });
+
+                title.addEventListener('mouseout', function() {
+                    this.style.textShadow = 'none';
+                });
+            }
+        });
+    </script>
 </body>
 </html>
