@@ -18,6 +18,8 @@
 
 - 🎮 100 Games
 - 🌐 Ultraviolet proxy
+- 💬 Live chatroom
+- 🤖 AI chatbot
 - 🔓 Single file, completely unblockable
 - 🚫 No ads
 - 🤩 Beautiful UI
