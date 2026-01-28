@@ -7,7 +7,7 @@
 
 <h1>Coreus</h1>
 <p>The truely completely unblockable UBG</p>
-<a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge"/></a>
+<a href="./LICENSE"><img src="https://img.shields.io/badge/License-AGPL_v3.0-blue?style=for-the-badge"/></a>
 <a href="https://noodlelover1.github.io/coreus/"><img alt="Website" src="https://img.shields.io/website?url=https%3A%2F%2Fnoodlelover1.github.io%2Fcoreus%2F&style=for-the-badge&label=Live%20Demo">
 </a>
 
@@ -73,8 +73,13 @@ I was inspired by the [Helios](https://github.com/dinguschan-owo/helios) concept
 
 ## License
 
-This code is under MIT License, wich means that you can do anything you want with the code, but there isn't any warranty of liability or any responsability.
+This code is under AGPL v3.0 License, wich means that you can use the code but you must :
+- Credit the original repo
+- Make a list of changes you made
+- Redistribute the code under the AGPL v3.0 license only
+- Remain the code open-source
 
+See the full license in the LICENSE file
 ## Devs TODO list
 
 - [ ] [URGENT] Better proxy integration + new APIs
