@@ -1524,14 +1524,10 @@
                     </div>
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <select id="aiModelSelector" style="padding: 8px 14px; background: rgba(255,255,255,0.05); border: 2px solid var(--border-color); color: var(--primary-text); border-radius: 20px; cursor: pointer; outline: none; transition: all 0.3s; font-size: 0.9rem; font-weight: 500;" onchange="updateAiModel(this.value)">
-                            <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                            <option value="gpt-4">GPT-4</option>
-                            <option value="gpt-3.5-turbo" selected>GPT-3.5 Turbo</option>
-                            <option value="claude-3-opus">Claude 3 Opus</option>
-                            <option value="claude-3-sonnet">Claude 3 Sonnet</option>
-                            <option value="claude-3-haiku">Claude 3 Haiku</option>
-                            <option value="gpt-5-nano">GPT-5 Nano</option>
-                            <option value="llama-2-70b">Llama 2 70B</option>
+                            <option value="gpt-5-nano" selected>GPT-5 Nano</option>
+                            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+                            <option value="gemini-2-flash">Gemini 2 Flash</option>
+                            <option value="gemini-2-flash-thinking">Gemini 2 Flash Thinking</option>
                             <option value="mistral-large">Mistral Large</option>
                         </select>
                         <button class="nav-icon-btn" style="background: #000; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="clearChatHistory()" title="Clear chat history">
@@ -1608,7 +1604,7 @@
         });
 
         // ai stuff
-        let currentAiModel = 'gpt-3.5-turbo';
+        let currentAiModel = 'gpt-5-nano';
 
         function updateAiModel(model) {
             currentAiModel = model;
@@ -1737,16 +1733,25 @@
             addLoadingMessage();
 
             try {
-                const response = await puter.ai.chat(message, { model: currentAiModel });
+                // Use streaming for better response handling
+                const response = await puter.ai.chat(message, { 
+                    model: currentAiModel,
+                    stream: false  // Set to false for standard response
+                });
                 
-                // Handle response - it might be an object or string
+                // Handle response - extract text carefully
                 let aiText = 'No response from Puter AI';
                 if (response) {
                     if (typeof response === 'string') {
                         aiText = response;
                     } else if (typeof response === 'object') {
-                        // Try to extract text from object
-                        aiText = response.text || response.message || response.content || JSON.stringify(response);
+                        // Try various common response formats
+                        aiText = response.text 
+                            || response.message 
+                            || response.content
+                            || response.choices?.[0]?.message?.content
+                            || response.result
+                            || JSON.stringify(response);
                     } else {
                         aiText = String(response);
                     }
@@ -1765,6 +1770,9 @@
                 }
                 if (error.status === 401) {
                     errorMsg = 'Puter authentication failed. Please sign in again.';
+                }
+                if (error.response) {
+                    console.error('Response:', error.response);
                 }
                 
                 addMessageToChat('ai', errorMsg);
