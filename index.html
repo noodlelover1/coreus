@@ -7,6 +7,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><circle cx='30' cy='30' r='15' fill='%23fff'/><circle cx='70' cy='70' r='15' fill='%23fff'/><path d='M35 35 L65 65' stroke='%23fff' stroke-width='5'/></svg>" type="image/svg+xml">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://js.puter.com/v2/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
             --primary-bg: #000000;
@@ -1521,9 +1522,22 @@
                         <i class="fas fa-robot" style="color: white; font-size: 24px;"></i>
                         <span style="color: var(--primary-text); font-size: 1.3rem; font-weight: 500;">AI Assistant</span>
                     </div>
-                    <button class="nav-icon-btn" style="background: #000; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="clearChatHistory()" title="Clear chat history">
-                        <i class="fas fa-trash" style="color: white; font-size: 18px;"></i>
-                    </button>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <select id="aiModelSelector" style="padding: 8px 14px; background: rgba(255,255,255,0.05); border: 2px solid var(--border-color); color: var(--primary-text); border-radius: 20px; cursor: pointer; outline: none; transition: all 0.3s; font-size: 0.9rem; font-weight: 500;" onchange="updateAiModel(this.value)">
+                            <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                            <option value="gpt-4">GPT-4</option>
+                            <option value="gpt-3.5-turbo" selected>GPT-3.5 Turbo</option>
+                            <option value="claude-3-opus">Claude 3 Opus</option>
+                            <option value="claude-3-sonnet">Claude 3 Sonnet</option>
+                            <option value="claude-3-haiku">Claude 3 Haiku</option>
+                            <option value="gpt-5-nano">GPT-5 Nano</option>
+                            <option value="llama-2-70b">Llama 2 70B</option>
+                            <option value="mistral-large">Mistral Large</option>
+                        </select>
+                        <button class="nav-icon-btn" style="background: #000; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s;" onclick="clearChatHistory()" title="Clear chat history">
+                            <i class="fas fa-trash" style="color: white; font-size: 18px;"></i>
+                        </button>
+                    </div>
                 </div>
                 
                 <div id="aiMessagesContainer" style="flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px;">
@@ -1594,6 +1608,13 @@
         });
 
         // ai stuff
+        let currentAiModel = 'gpt-3.5-turbo';
+
+        function updateAiModel(model) {
+            currentAiModel = model;
+            console.log('AI Model changed to:', currentAiModel);
+        }
+
         function showAiView() {
             // hide all other views first
             document.querySelector('.container').style.display = 'none';
@@ -1716,9 +1737,20 @@
             addLoadingMessage();
 
             try {
-                const response = await puter.ai.chat(message, { model: 'gpt-5-nano' });
+                const response = await puter.ai.chat(message, { model: currentAiModel });
                 
-                const aiText = response || 'No response from Puter AI';
+                // Handle response - it might be an object or string
+                let aiText = 'No response from Puter AI';
+                if (response) {
+                    if (typeof response === 'string') {
+                        aiText = response;
+                    } else if (typeof response === 'object') {
+                        // Try to extract text from object
+                        aiText = response.text || response.message || response.content || JSON.stringify(response);
+                    } else {
+                        aiText = String(response);
+                    }
+                }
 
                 removeLoadingMessage();
                 addMessageToChat('ai', aiText);
@@ -1780,6 +1812,65 @@
             }
         }
 
+        function sanitizeHtml(html) {
+            const div = document.createElement('div');
+            div.textContent = html;
+            return div.innerHTML;
+        }
+
+        function convertMarkdownToHtml(text) {
+            try {
+                // Ensure text is a string
+                if (typeof text !== 'string') {
+                    if (typeof text === 'object') {
+                        text = text.text || text.message || text.content || JSON.stringify(text);
+                    } else {
+                        text = String(text);
+                    }
+                }
+
+                // Configure marked options for safe rendering
+                marked.setOptions({
+                    breaks: true,
+                    gfm: true,
+                    pedantic: false
+                });
+                
+                // Convert markdown to HTML
+                let html = marked.parse(text);
+                
+                // Remove dangerous tags but keep formatting
+                const allowedTags = ['p', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'a', 'br', 'hr'];
+                
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+                
+                // Clean up dangerous elements
+                temp.querySelectorAll('*').forEach(el => {
+                    if (!allowedTags.includes(el.tagName.toLowerCase())) {
+                        while (el.firstChild) {
+                            el.parentNode.insertBefore(el.firstChild, el);
+                        }
+                        el.parentNode.removeChild(el);
+                    }
+                });
+                
+                // Remove dangerous attributes
+                temp.querySelectorAll('a').forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href && !href.startsWith('javascript:')) {
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                    }
+                });
+                
+                return temp.innerHTML;
+            } catch (error) {
+                console.error('Markdown conversion error:', error);
+                return sanitizeHtml(text);
+            }
+        }
+
         function addMessageToChat(sender, text) {
             const container = document.getElementById('aiMessagesContainer');
             
@@ -1801,14 +1892,16 @@
                 bubble.style.border = '2px solid #0d3b1f';
                 bubble.style.color = 'white';
                 bubble.style.textAlign = 'left';
+                bubble.textContent = text;
             } else {
                 bubble.style.background = 'rgba(255, 255, 255, 0.05)';
                 bubble.style.color = 'var(--primary-text)';
                 bubble.style.border = '1px solid #333333';
                 bubble.style.textAlign = 'left';
+                bubble.innerHTML = convertMarkdownToHtml(text);
+                bubble.className = 'ai-message-bubble';
             }
 
-            bubble.textContent = text;
             messageDiv.appendChild(bubble);
             container.appendChild(messageDiv);
 
@@ -1868,6 +1961,164 @@
             
             .ai-loading-dot:nth-child(3) {
                 animation-delay: 0.4s;
+            }
+
+            #aiModelSelector {
+                transition: all 0.3s ease !important;
+            }
+
+            #aiModelSelector:hover {
+                border-color: var(--accent-color) !important;
+                background: rgba(255,255,255,0.1) !important;
+                box-shadow: 0 0 10px rgba(76, 175, 80, 0.15) !important;
+            }
+
+            #aiModelSelector:focus {
+                border-color: var(--accent-color) !important;
+                background: rgba(255,255,255,0.15) !important;
+                box-shadow: 0 0 15px rgba(76, 175, 80, 0.25) !important;
+            }
+
+            #aiModelSelector option {
+                background: var(--secondary-bg);
+                color: var(--primary-text);
+            }
+
+            /* Markdown Styling */
+            .ai-message-bubble h1,
+            .ai-message-bubble h2,
+            .ai-message-bubble h3,
+            .ai-message-bubble h4,
+            .ai-message-bubble h5,
+            .ai-message-bubble h6 {
+                margin: 12px 0 8px 0;
+                font-weight: 600;
+                color: var(--accent-light);
+            }
+
+            .ai-message-bubble h1 {
+                font-size: 1.5rem;
+                border-bottom: 2px solid rgba(76, 175, 80, 0.3);
+                padding-bottom: 8px;
+            }
+
+            .ai-message-bubble h2 {
+                font-size: 1.3rem;
+                border-bottom: 1px solid rgba(76, 175, 80, 0.2);
+                padding-bottom: 6px;
+            }
+
+            .ai-message-bubble h3 {
+                font-size: 1.15rem;
+            }
+
+            .ai-message-bubble p {
+                margin: 8px 0;
+            }
+
+            .ai-message-bubble strong {
+                color: var(--accent-light);
+                font-weight: 700;
+            }
+
+            .ai-message-bubble em {
+                font-style: italic;
+                opacity: 0.9;
+            }
+
+            .ai-message-bubble code {
+                background: rgba(0, 0, 0, 0.3);
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-family: 'Courier New', monospace;
+                font-size: 0.9rem;
+                color: #4dff4d;
+            }
+
+            .ai-message-bubble pre {
+                background: rgba(0, 0, 0, 0.4);
+                padding: 12px;
+                border-radius: 8px;
+                border-left: 4px solid var(--accent-color);
+                overflow-x: auto;
+                margin: 10px 0;
+                font-family: 'Courier New', monospace;
+                font-size: 0.85rem;
+            }
+
+            .ai-message-bubble pre code {
+                background: transparent;
+                padding: 0;
+                border-radius: 0;
+                color: #4dff4d;
+            }
+
+            .ai-message-bubble blockquote {
+                border-left: 4px solid var(--accent-color);
+                padding-left: 12px;
+                margin: 10px 0;
+                opacity: 0.85;
+                font-style: italic;
+                color: var(--secondary-text);
+            }
+
+            .ai-message-bubble ul,
+            .ai-message-bubble ol {
+                margin: 10px 0;
+                padding-left: 20px;
+            }
+
+            .ai-message-bubble li {
+                margin: 4px 0;
+            }
+
+            .ai-message-bubble ul li:before {
+                content: '▸ ';
+                color: var(--accent-color);
+                margin-right: 6px;
+            }
+
+            .ai-message-bubble ul {
+                list-style: none;
+                padding-left: 0;
+            }
+
+            .ai-message-bubble a {
+                color: var(--accent-color);
+                text-decoration: none;
+                border-bottom: 1px dotted var(--accent-color);
+                transition: all 0.2s;
+            }
+
+            .ai-message-bubble a:hover {
+                opacity: 0.8;
+                border-bottom-style: solid;
+            }
+
+            .ai-message-bubble hr {
+                border: none;
+                height: 2px;
+                background: rgba(76, 175, 80, 0.2);
+                margin: 15px 0;
+            }
+
+            .ai-message-bubble table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 10px 0;
+            }
+
+            .ai-message-bubble th,
+            .ai-message-bubble td {
+                border: 1px solid rgba(76, 175, 80, 0.2);
+                padding: 8px;
+                text-align: left;
+            }
+
+            .ai-message-bubble th {
+                background: rgba(76, 175, 80, 0.1);
+                color: var(--accent-light);
+                font-weight: 600;
             }
         `;
         document.head.appendChild(style);
