@@ -508,13 +508,18 @@
                         <option value="EcoleDirecte">EcoleDirecte</option>
                     </select>
                 </div>
+
+                <div style="margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <h4 style="color: var(--primary-text); margin-bottom: 0.5rem; font-weight: 400;">about:blank cloaking</h4>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <button id="aboutBlankBtn" title="Open the current page inside an iframe on an about:blank tab" class="proxy-btn" style="padding: 0.7rem 2.2rem; background: linear-gradient(90deg, var(--accent-color), var(--accent-light)); color: #000; font-weight: 600; font-size: 1.08rem; border: none; border-radius: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); transition: background 0.2s, box-shadow 0.2s;">Open in about:blank</button>
+                    </div>
+                </div>
             </div>
 
 
             
-            <div style="display: flex; justify-content: flex-end; margin-top: 2rem;">
-                <button class="proxy-btn" onclick="hideSettingsView()" style="background: var(--accent-color);">Done</button>
-            </div>
+
         </div>
 
         <div class="bottom-navbar" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); border-radius: 50px; padding: 10px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 2001; border: 1px solid rgba(255,255,255,0.1);">
@@ -1086,6 +1091,66 @@
             }
         }
 
+        function openAboutBlankWithIframe() {
+            try {
+                // Always load the current page URL in the iframe (window.location.href)
+                let iframeSrc = window.location.href;
+
+                const safeSrc = iframeSrc.replace(/"/g, '&quot;');
+
+                // Build HTML to inject
+                const html = `<!doctype html><html><head><title>about:blank</title><meta name="referrer" content="no-referrer"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;height:100%;background:#000}iframe{width:100%;height:100%;border:0;}</style></head><body><iframe src="${safeSrc}" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"></iframe></body></html>`;
+
+                // Try to open a blank tab and write into it
+                let newWin = window.open('about:blank', '_blank');
+                if (!newWin) {
+                    alert('Popup blocked. Please allow popups for this site.');
+                    return;
+                }
+
+                try {
+                    newWin.document.open();
+                    newWin.document.write(html);
+                    newWin.document.close();
+                    try { newWin.focus(); } catch(e) {}
+                } catch (writeErr) {
+                    // writing failed (some browsers block), fallback to data URL
+                    try {
+                        const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(html);
+                        const newWin2 = window.open(dataUrl, '_blank');
+                        if (!newWin2) {
+                            alert('Popup blocked. Please allow popups for this site.');
+                            return;
+                        }
+                        try { newWin2.focus(); } catch(e) {}
+                        return;
+                    } catch (e) {
+                        console.error('Fallback open failed', e);
+                        alert('Failed to open about:blank view.');
+                        return;
+                    }
+                }
+
+                // Verification fallback: if the injected document doesn't contain the iframe after a short delay, navigate to a data URL as a last resort
+                setTimeout(() => {
+                    try {
+                        if (!newWin || newWin.closed) return;
+                        const body = newWin.document && newWin.document.body;
+                        const iframe = body && body.querySelector && body.querySelector('iframe');
+                        if (!iframe) {
+                            const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(html);
+                            try { newWin.location.href = dataUrl; } catch (navErr) { console.warn('Could not navigate fallback', navErr); }
+                        }
+                    } catch (e) {
+                        // Accessing newWin.document may throw if the window navigated cross-origin; ignore
+                    }
+                }, 200);
+            } catch (e) {
+                console.error('openAboutBlankWithIframe error', e);
+                alert('Failed to open about:blank view.');
+            }
+        }
+
         function toggleSettingsModal() {
             const modal = document.getElementById('settingsModal');
             if (modal.style.display === 'none') {
@@ -1101,12 +1166,22 @@
         }
 
         function loadCurrentSettings() {
-            document.querySelector(`input[name="proxyMode"][value="${proxyMode}"]`).checked = true;
+            // Modal radios
+            const modalRadio = document.querySelector(`input[name="proxyMode"][value="${proxyMode}"]`);
+            if (modalRadio) modalRadio.checked = true;
+            // Settings view radios
+            const settingsRadio = document.querySelector(`input[name="proxyModeSettings"][value="${proxyMode}"]`);
+            if (settingsRadio) settingsRadio.checked = true;
 
-            document.getElementById('singleProxySelection').style.display =
-                proxyMode === 'single' ? 'block' : 'none';
+            const modalSel = document.getElementById('singleProxySelection');
+            const settingsSel = document.getElementById('singleProxySelectionSettings');
+            if (modalSel) modalSel.style.display = proxyMode === 'single' ? 'block' : 'none';
+            if (settingsSel) settingsSel.style.display = proxyMode === 'single' ? 'block' : 'none';
 
-            document.getElementById('proxySelect').value = selectedProxy;
+            const proxySelectModal = document.getElementById('proxySelect');
+            const proxySelectSettings = document.getElementById('proxySelectSettings');
+            if (proxySelectModal) proxySelectModal.value = selectedProxy;
+            if (proxySelectSettings) proxySelectSettings.value = selectedProxy;
 
             // Load cloaking setting
             const storedCloak = localStorage.getItem('cloakingOption') || cloakingOption || 'No';
@@ -1118,8 +1193,20 @@
 
         function setProxyMode(mode) {
             proxyMode = mode;
-            document.getElementById('singleProxySelection').style.display =
-                mode === 'single' ? 'block' : 'none';
+            // Update both modal and settings view UI
+            const modalSel = document.getElementById('singleProxySelection');
+            const settingsSel = document.getElementById('singleProxySelectionSettings');
+            if (modalSel) modalSel.style.display = mode === 'single' ? 'block' : 'none';
+            if (settingsSel) settingsSel.style.display = mode === 'single' ? 'block' : 'none';
+
+            // Update settings radios to reflect the change (in case of programmatic change)
+            const radioModal = document.querySelector(`input[name="proxyMode"][value="${mode}"]`);
+            const radioSettings = document.querySelector(`input[name="proxyModeSettings"][value="${mode}"]`);
+            if (radioModal) radioModal.checked = true;
+            if (radioSettings) radioSettings.checked = true;
+
+            showStatus(`Proxy mode set to ${mode}`, 'success');
+            setTimeout(hideStatus, 1200);
         }
 
         function saveSettings() {
@@ -2268,6 +2355,25 @@
                     localStorage.setItem('cloakingOption', cloakingOption);
                     applyCloaking(cloakingOption);
                 });
+            }
+
+            // Apply proxy selection immediately when changed in the settings view
+            const proxySelectSettings = document.getElementById('proxySelectSettings');
+            if (proxySelectSettings) {
+                proxySelectSettings.value = selectedProxy;
+                proxySelectSettings.addEventListener('change', function() {
+                    selectedProxy = this.value;
+                    // mirror to modal select
+                    const modalSelect = document.getElementById('proxySelect');
+                    if (modalSelect) modalSelect.value = selectedProxy;
+                    showStatus(`Selected proxy: ${selectedProxy}`, 'success');
+                    setTimeout(hideStatus, 1200);
+                });
+            }
+
+            const aboutBlankBtn = document.getElementById('aboutBlankBtn');
+            if (aboutBlankBtn) {
+                aboutBlankBtn.addEventListener('click', openAboutBlankWithIframe);
             }
 
             // Setup Puter login button
