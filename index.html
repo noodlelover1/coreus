@@ -496,6 +496,21 @@
                     </select>
                 </div>
             </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="color: var(--primary-text); margin-bottom: 1rem;">Cloaking</h3>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; color: var(--primary-text); margin-bottom: 0.5rem;">Tab cloaking:</label>
+                    <select id="cloakingSelectSettings" style="width: 100%; padding: 0.8rem; background: var(--secondary-bg); color: var(--primary-text); border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem; outline: none; transition: border-color 0.3s;">
+                        <option value="No" selected>No</option>
+                        <option value="Google">Google</option>
+                        <option value="Google Classroom">Google Classroom</option>
+                        <option value="EcoleDirecte">EcoleDirecte</option>
+                    </select>
+                </div>
+            </div>
+
+
             
             <div style="display: flex; justify-content: flex-end; margin-top: 2rem;">
                 <button class="proxy-btn" onclick="hideSettingsView()" style="background: var(--accent-color);">Done</button>
@@ -986,8 +1001,90 @@
         let proxyMode = 'fallback';
         let selectedProxy = proxyAPIs[0];
         
+        // Cloaking settings
+        let cloakingOption = localStorage.getItem('cloakingOption') || 'No';
+        const cloakingMap = {
+            'Google': 'google.com',
+            'Google Classroom': 'cassroom.google.com',
+            'EcoleDirecte': 'ecoledirecte.com'
+        };
+        let originalTitle = document.title || 'Coreus';
+        let originalFaviconHref = (document.querySelector('link[rel="icon"]') || {}).href;
+
         var debugMode = false;
         const maxRetries = 3;
+
+        async function applyCloaking(option) {
+            try {
+                let link = document.querySelector('link[rel="icon"]');
+                if (!link) {
+                    link = document.createElement('link');
+                    link.rel = 'icon';
+                    document.head.appendChild(link);
+                }
+
+                if (option === 'No') {
+                    document.title = originalTitle;
+                    if (originalFaviconHref) link.href = originalFaviconHref;
+                    return;
+                }
+
+                document.title = option;
+                const domain = cloakingMap[option];
+                const url = `https://favicon.im/${domain}`;
+                const cacheKey = `cloakingFavicon:${domain}`;
+                const TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
+                const now = Date.now();
+
+                // Try to read from cache
+                try {
+                    const cachedRaw = localStorage.getItem(cacheKey);
+                    if (cachedRaw) {
+                        const cached = JSON.parse(cachedRaw);
+                        if (cached && cached.data && cached.ts && (now - cached.ts) < TTL) {
+                            link.href = cached.data;
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('favicon cache read error', e);
+                }
+
+                // Fetch and cache as data URL for better cross-browser behavior
+                try {
+                    const res = await fetch(url, { mode: 'cors' });
+                    if (res.ok) {
+                        const blob = await res.blob();
+                        if (blob && blob.type && blob.type.startsWith('image')) {
+                            const dataUrl = await new Promise((resolve, reject) => {
+                                const reader = new FileReader();
+                                reader.onloadend = () => resolve(reader.result);
+                                reader.onerror = reject;
+                                reader.readAsDataURL(blob);
+                            });
+
+                            link.href = dataUrl;
+
+                            // Try to persist in localStorage
+                            try {
+                                localStorage.setItem(cacheKey, JSON.stringify({ data: dataUrl, ts: now }));
+                            } catch (e) {
+                                console.warn('favicon cache write failed', e);
+                            }
+
+                            return;
+                        }
+                    }
+
+                    // Fallback to direct URL if anything goes wrong
+                    link.href = url;
+                } catch (err) {
+                    link.href = url;
+                }
+            } catch (e) {
+                console.error('Cloaking apply error', e);
+            }
+        }
 
         function toggleSettingsModal() {
             const modal = document.getElementById('settingsModal');
@@ -1010,6 +1107,13 @@
                 proxyMode === 'single' ? 'block' : 'none';
 
             document.getElementById('proxySelect').value = selectedProxy;
+
+            // Load cloaking setting
+            const storedCloak = localStorage.getItem('cloakingOption') || cloakingOption || 'No';
+            cloakingOption = storedCloak;
+            const cloakingSelectSettings = document.getElementById('cloakingSelectSettings');
+            if (cloakingSelectSettings) cloakingSelectSettings.value = cloakingOption;
+            applyCloaking(cloakingOption);
         }
 
         function setProxyMode(mode) {
@@ -1021,6 +1125,13 @@
         function saveSettings() {
             proxyMode = document.querySelector('input[name="proxyMode"]:checked').value;
             selectedProxy = document.getElementById('proxySelect').value;
+
+            // Save cloaking (settings view)
+            const cloakSelSettings = document.getElementById('cloakingSelectSettings');
+            const chosen = (cloakSelSettings && cloakSelSettings.value) || 'No';
+            cloakingOption = chosen;
+            localStorage.setItem('cloakingOption', cloakingOption);
+            applyCloaking(cloakingOption);
 
             document.getElementById('settingsModal').style.display = 'none';
         }
@@ -2140,6 +2251,22 @@
                         e.preventDefault();
                         sendAiMessage();
                     }
+                });
+            }
+
+            // initialize cloaking on DOMContentLoaded
+            originalTitle = originalTitle || document.title;
+            originalFaviconHref = originalFaviconHref || (document.querySelector('link[rel="icon"]') || {}).href;
+            cloakingOption = localStorage.getItem('cloakingOption') || cloakingOption || 'No';
+            applyCloaking(cloakingOption);
+
+            const cloakingSelectSettings = document.getElementById('cloakingSelectSettings');
+            if (cloakingSelectSettings) {
+                cloakingSelectSettings.value = cloakingOption;
+                cloakingSelectSettings.addEventListener('change', function() {
+                    cloakingOption = this.value;
+                    localStorage.setItem('cloakingOption', cloakingOption);
+                    applyCloaking(cloakingOption);
                 });
             }
 

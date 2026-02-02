@@ -23,6 +23,7 @@
 - 🌐 Ultraviolet proxy
 - 💬 Live chatroom
 - 🤖 AI chatbot with 4 AI models
+- 🥷 Tab cloaking
 - 🔓 Single file, completely unblockable
 - 🚫 No ads
 - 🤩 Beautiful UI
