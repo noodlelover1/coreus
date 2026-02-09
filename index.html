@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        :root {
+        :root { 
             --primary-bg: #000000;
             --secondary-bg: #0d0d0d;
             --tertiary-bg: #1a1a1a;
@@ -941,19 +941,19 @@
                 return;
             }
 
-            // Check if input contains a domain name with common TLDs
-            const domainPattern = /\.(com|org|net|io|gov|edu|int|mil|arpa|co|uk|de|jp|fr|au|ca|ru|br|in|it|nl|se|no|dk|fi|es|pl|be|ch|at|cz|ie|pt|hu|gr|il|cn|hk|kr|sg|mx|ar|cl|pe|ve|uy|py|bo|ec|gt|hn|sv|ni|cr|pa|do|cu|jm|ht|bs|bz|sr|gy|fk|gg|je|im|ai|bm|ky|lc|vc|ag|gd|kn|ms|tc|vg|vi|pr|as|gu|mp|pw|fm|mh|ws|to|vu|sb|nc|pf|wf|ck|nu|tk|pn|nf|cc|cx|hm|aq|gs|tf)$/i;
-            
-            if (domainPattern.test(inputUrl)) {
-                // It's a domain, add https:// if not present
-                if (!inputUrl.startsWith('http://') && !inputUrl.startsWith('https://')) {
-                    targetUrl = 'https://' + inputUrl;
-                } else {
-                    targetUrl = inputUrl;
-                }
+            // Check if input is already a complete URL (starts with http:// or https://)
+            if (/^https?:\/\//i.test(inputUrl)) {
+                // It's already a complete URL, use it directly
+                targetUrl = inputUrl;
             } else {
-                // It's a search query, use DuckDuckGo
-                targetUrl = 'https://duckduckgo.com/?q=' + encodeURIComponent(inputUrl);
+                // Check if input contains spaces or looks like a search query
+                if (inputUrl.includes(' ') || !inputUrl.includes('.')) {
+                    // It's a search query, use DuckDuckGo
+                    targetUrl = 'https://duckduckgo.com/?q=' + encodeURIComponent(inputUrl);
+                } else {
+                    // It's a domain without protocol, add https://
+                    targetUrl = 'https://' + inputUrl;
+                }
             }
             
             tryProxies();
