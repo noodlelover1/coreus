@@ -42,7 +42,7 @@ You can simply use the live demo at https://noodlelover1.github.io/coreus/ . Blo
 
 ### Website deployment
 
-Deploy this repo or the <code>index.html</code> file to any website static host (Vercel, Netlify, Render, Cloudflare/GitHub/GitLab pages, Surge.sh, ...). You will get your own Coreus link that you can change and access !
+Deploy this repo to any website static host (Vercel, Netlify, Render, Cloudflare/GitHub/GitLab pages, Surge.sh, ...). You will get your own Coreus link that you can change and access !
 
 ### Codespaces
 
@@ -54,7 +54,7 @@ Wait a few seconds and a popup will appear saying a port was forwarded. Click on
 
 ### Code editors
 
-Copy the entire <code>index.html</code> file content, then navigate to any HTML editor (e.g w3schools) and paste the code.
+Copy the entire <code>coreus-onefile.html</code> file content, then navigate to any HTML editor (e.g w3schools) and paste the code.
 
 ### Data URL
 
