@@ -32,7 +32,7 @@
 
 I am actively looking for contributors ! Wanna help ? See the devs todo list at the end of the README, do anything on the list and open a PR.
 
-## Deploying:
+## Deployment:
 
 > [![Deploy to Vercel](https://binbashbanana.github.io/deploy-buttons/buttons/remade/vercel.svg)](https://vercel.com/new/clone?repository-url=https://github.com/noodlelover1/coreus)
 > [![Deploy to Heroku](https://binbashbanana.github.io/deploy-buttons/buttons/remade/heroku.svg)](https://heroku.com/deploy/?template=https://github.com/noodlelover1/coreus)
@@ -51,10 +51,6 @@ There are a bunch of ways to access Coreus. Here are some :
 ### Live Demo
 
 You can simply use the live demo at https://noodlelover1.github.io/coreus/ . Blocked ? Use one of the options below :
-
-### Website deployment
-
-Deploy this repo to any website static host (Vercel, Netlify, Render, Cloudflare/GitHub/GitLab pages, Surge.sh, ...). You will get your own Coreus link that you can change and access !
 
 ### Codespaces
 
